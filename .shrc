@@ -1,0 +1,610 @@
+# .shrc - bourne shell startup file 
+#
+# This file will be used if the shell is invoked for interactive use and
+# the environment variable ENV is set to this file.
+#
+# see also sh(1), environ(7).
+#
+
+
+# Some usefull fonctions
+###_ > seen
+ssh_seen ()
+{
+    local seen="${1?:'were you have been'}"
+    echo "$seen" >> ~/.ssh/done
+}
+
+###_ > copy en scp from on machine to another
+sscp ()
+{
+    local src="${1?:'Which src host:<dir|file>'}"
+    local dst="${2?:'Which dst host:[dir]'}"
+
+    local tmp_dir="$(mktemp -d /tmp/SSCP-XXXXXX)"
+    local filepath=`echo $src | sed -E -e 's/^.*:(.*)$/\1/'`
+    local host_src=`echo "$src" | sed -E -e 's/^(.*):.*$/\1/'`
+    local host_dst=`echo "$dst" | sed -E -e 's/^(.*):.*$/\1/'`
+    local basename=`basename "$filepath"`
+    cd $tmp_dir
+    echo "- ===> \"$host_src\""
+    scp -r "$src" .
+    echo "* ===> \"$host_dst\""
+    scp -r "$basename" "$2"
+    cd
+    rm -r "$tmp_dir"
+}
+
+
+###_ > Transcode for nokia n6303
+nok_vid ()
+{
+    local src="${1?:'Which file'}"
+    local dst="${2?:'Where I put it?'}"
+    local meta="${3?:'A little name (name=...:artist=...:...) ?'}"
+    [ ! -e "$src" ] && : ${9?:'Please a valid input.'}
+    meta="`echo $meta | perl -pe 's/ /\\\\ /g'`"
+    [ -e "${dst}.avi" ] && rm "${dst}.avi"
+
+    eval mencoder -quiet -info "$meta" \
+        -profile nokia-n6303-with-nok_vid "$src" -o "${dst}.avi" 1>/dev/null
+    meta="`echo $meta | perl -pe 's/:/ -metadata /g'`"
+    eval ffmpeg -strict experimental -metadata "$meta"  -i "${dst}.avi" \
+        -f mp4 -s qvga -aspect 4:3 \
+        -r 15 -vcodec copy -acodec aac \
+        -ar 32000 -ab 64k "$dst" -v -1 -loglevel quiet
+    rm "${dst}.avi"
+}
+
+###_ > Mount cdrom
+cdrom ()
+{
+    [ ! -d ~/mnt/dvd ] && mkdir -p ~/mnt/dvd
+    sudo mount_cd9660 /dev/acd0 ~/mnt/dvd
+}
+
+###_ > Mount usb device
+qm ()
+{
+    local dn="${1?:'Which device'}"
+    local dst="${2?:'Which mount point'}"
+    sudo mount_msdosfs -u chem -o longnames "/dev/da${dn}s1" "$dst"
+}
+
+qum ()
+{
+    local dst="${1?:'Which mount point'}"
+    sudo umount "$dst"
+}
+
+###_ > Mux MP4
+mp4 ()
+{
+    local src="${1?:'Which file?'}"
+    local dst="${2?:'Which destination'}"
+    ffmpeg -i "$src" -f mp4 -vcodec copy -acodec copy "$dst" -v -1 
+}
+
+###_ > Extract
+x ()
+{
+    : ${1?:'Set filename'}
+    local mime="`file -b '${1}' | cut -d' ' -f1`"
+    local f="$1"
+    shift
+    case "$mime" in
+        RAR)
+            unrar x -kb "$f" "$@"
+            ;;
+        Zip)
+            unzip "$f" "$@"
+            ;;
+        gzip)
+            case "`file -z -b '${1}'`| cut -d' ' -f1" in
+                POSIX)
+                    tar xfz "$f" "$@"
+                    ;;
+                *)
+                    gzip -d "$f"
+            esac
+            ;;
+        *)
+            echo "Unknown file type" >&2
+    esac
+}
+
+###_ > List
+xl ()
+{
+    : ${1?:'Set filename'}
+    local mime="`file -b '${1}' | cut -d' ' -f1`"
+    case "$mime" in
+        RAR)
+            unrar l "$1"
+            ;;
+        Zip)
+            unzip -l "$1"
+            ;;
+        gzip)
+            tar tfz "$1"
+            ;;
+        *)
+            echo "Unknown file type" >&2
+    esac
+}
+
+###_ > Record from the mic
+rmic ()
+{
+    mixer rec 75
+    ffmpeg -f oss -i /dev/dsp0.0 $1
+}
+
+###_ > Make a nokia n810 film conversion
+n810_fc ()
+{
+    local movie_in="$1"
+    local movie_out="$2"
+    local profile=${3:-"n810-16-9"}
+    mencoder -profile $profile "$1" -o "$2.t"
+    mplayer -dumpaudio "${movie_out}.t" -dumpfile "${movie_in}.mp3"
+    mplayer -dumpvideo "${movie_out}.t" -dumpfile "${movie_in}.mp4v"
+    rm -f "$2"
+    mp4creator "${movie_in}.mp3" "$2"
+    mp4creator "${movie_in}.mp4v" -rate=23.976 "$2"
+    mp4creator -optimize "$2"
+    rm "${movie_out}.t" "${movie_in%.avi}.mp3" "${movie_in%.avi}.mp4v"
+}
+###_ > start a shell
+ss ()
+{
+    local name="$1"
+    if [ -n "$name" ]; then name="-name $name"; fi
+    unset TMUX
+    urxvtc $name &
+}
+
+###_ > burn file
+dvdb ()
+{
+    set -x
+    local files="";
+    while [ -n "$1" ]; do
+        if [ -d "$1" ]; then
+            # directory: only one arg accepted.
+            files="$1";
+            while [ -n "$1" ]; do shift; done
+        else
+            # not tested ...
+            local fname=`basename "$1" | tr -s "[' \t]" '_'`
+            files="${files} /${fname}=${1} "
+            if [ -z "$2" ];then
+                local tmp_dir=`mktemp -t mkisofs`
+                files="-graft-points ${files} $tmp_dir"
+            fi
+        shift
+        fi
+    done
+    echo "FILE: $files"
+    files="$files"
+    sudo echo
+    perl -le '
+
+            my $files = q{'"$files"'};
+            my @devs = qx(sudo camcontrol devlist | grep DVD);
+            $not_done = 1;
+            my $dev = "";
+            NOT_DONE:
+            while ($not_done) {
+                for (@devs) {
+                    if(/\([^,]+,(?<dev>[^\d]+)(?<unit>\d)\)/){
+                            my $mes = qx(sudo camcontrol readcap -n $+{dev} -u $+{unit} 2>&1);
+                            $dev = $+{dev}.$+{unit};
+                            if ($mes =~ m/^Last Block/) { last NOT_DONE; };
+                        }
+                }
+                sleep 2;
+            }
+            print "growisofs -J -R -Z /dev/$dev $files";
+
+            my $res = qx(growisofs -J -R -Z /dev/$dev $files);
+             '
+}
+
+cdb ()
+{
+    while [ -n "$1" ]; do
+        local fname=`basename "$1" | tr -s "[' \t]" '_'`
+        local files="${files} /${fname}=${1} "
+        shift
+    done
+    local tmp_dir=`mktemp -t mkisofs`
+    sudo echo
+    local bus=`sudo cdrecord -scanbus | grep 'CD-ROM' | sort -n -t, -k1 | head -1 | awk '{print $1}'`
+    mkisofs -graft-points $files $tmp_dir | sudo cdrecord dev="$bus" driveropts=burnfree -data -tao -
+    bus=`echo $bus | perl -lne '@c = split /./;print $c[0].":".$c[1].":".$c[2]'`
+    sudo camcontrol eject $bus
+}
+
+qblank ()
+{
+    local bus=`sudo cdrecord -scanbus | grep 'CD-ROM' | sort -n -t, -k1 | head -1 | awk '{print $1}'`
+    sudo cdrecord dev="$bus" blank=fast
+}
+
+###_ > Recursive depend.
+rdep ()
+{
+a=`pkg_info -r "$1"| awk -F: '/Dependency/ {print $2}'`;while [ -n "$a" ]; do b=`echo "$a" | head -1 | tr -d " "`; a=`echo "$a" | grep -v "$b"`;print $b;c=""; [ -n "$b" ] && c=`pkg_info -r "$b"|awk -F: '/Dependency/ {print $2}'`; [ -n "$c" ] && a=`echo -e "$a\n$c"`;done | sort -u
+}
+
+
+###_ > # sshcp #########
+# PURPOSE: Copy from one computer to another.  May change the permission.
+# INPUT  : cpt_o:file, cpt_d:file, [owner]
+# ENV    : No Env necessity
+# OUTPUT : No Output
+###_ >
+sshcp ()
+{
+  local cpt_o=${1:?"Orig must be set"}
+  local cpt_d=${2:?"Dest must be set"}
+  local owner=$3
+  local chown_cmd=""
+  local tmp=`mktemp /tmp/sshcp.XXXXXX`
+  [ -n $owner ] && chown_cmd="ssh $cpt_d chown $owner "
+  scp "$cpt_o" $tmp && scp $tmp "$cpt_d"
+  [ -n "$chown_cmd" ] && $chown_cmd
+}
+
+# do not center images on book from install-chm
+chm-no-center()
+{
+    local dir="${1:?Must supply the base directory.}"
+    find "$dir" -type f -iregex '.*\.htm[l]\{0,1\}' -print0 | \
+        xargs -0 \
+        sudo \
+        perl -i -0777 -lpe \
+        's{(FIG[^>]+></[Aa]><[Pp]>)<center>(.*?)</center>}{$1$2}igms;
+	# support ->10 balises between <center> and <img>
+	# <img> must be followed by a balise and my be followed by
+	# text/newline
+	# support multiple successive  <img>.
+        s{<center>((?:[^<]*?<[^>]+?>[^<]*?){0,9}(?:(<[^>]+>)*?<img [^>]+?>(?:[^<]*?<[^>]+>[^>]*?)?)+?)</center>}{$1}igms;'
+}
+
+# -q do not work on Solaris.
+at_work () {
+    case $WHERE_AM_I in
+        AT_HOME)
+            echo 'no'
+            ;;
+        AT_WORK)
+            echo 'yes'
+            ;;
+        *)
+            echo ''            
+    esac
+}
+
+manhtml (){
+    manps -h "$@" > /tmp/man_$$.html
+    firefox -remote "openURL(/tmp/man_$$.html)"
+}
+manutf()
+{
+    manps -u "$@"
+}
+manps (){
+    local man_file="";
+    local command="cat";
+    local type="ps";
+    case $1 in
+        -h) type="html";shift;;
+        -u) type=utf8;shift;;
+    esac
+            
+    if [ -n "$*" ];then 
+        man_file="$(man -w $@)";
+    fi;
+    if [ "${man_file##*.}." = "gz." ]; then
+        command=zcat;
+    fi
+    "$command" "$man_file" | groff -T${type} -man -mdoc;
+}
+
+qf () {
+    if [ -d "$1" ]; then
+        DIR="$1";
+        shift;
+    else
+        DIR=".";
+    fi
+    find "$DIR" -type f -iname "*$1*" 2>/dev/null
+}
+
+load_maybe () {
+    [ -f "$1" ] && . "$1"
+}
+
+compat_id () {
+    id | sed -ne 's/^[^0-9]*\([0-9]*\).*$/\1/p'
+}
+
+old_c () {
+    local HOSTNAME=`hostname`
+    local STR_ENV=`cat $HOME/.keychain/$HOSTNAME-sh | sed -e 's/export[^;]*;//' | tr ';\n' ' '`
+    local HOSTNAME=`hostname`
+    local user=${2:-''}
+    local opt="$1"
+    [ -n "$user" ] && opt=" -t $1 '/bin/su - $user'"
+    eval screen -t "$1" env -S "$STR_ENV"  ssh $opt;
+}
+
+epoch () {
+    perl  -MTime::localtime -e '$tm=localtime('$1');print $tm->hour . "H" . $tm->min . "m" . $tm->sec . "\n"'
+}
+
+p () {
+    # print double side printed booklet style suitable for slide
+    # presentation pdf input
+    local sig=" "
+    [ -n "$2" ] && sig=" -s$2 "
+    pdftops $1 - | psbook $sig | psnup -l -Pa4 -2  > ${1%.pdf}.ps
+    gv ${1%.pdf}.ps
+    read
+    /usr/local/bin/lpr -Pbigone -o sides=two-sided-long-edge ${1%.pdf}.ps
+}
+
+# print in a5 format on a5 paper, from std a4 document.
+pa5 () {
+    pstops '1:0@.7' "$@" > "$@.$$"
+    lpr -o media=a5 "$@.$$"
+}
+
+ape_play()
+{
+    mac "$1" /dev/stdout -d | play -t .wav -
+}
+
+install_chm()
+{
+    install-chm.pl -s localhost -r '/home/d/www/doc' -d "$1" -n "$2" "$3"
+    sudo chown -R '/home/d/www/doc'
+}
+
+# file permissions: rwxr-x--
+umask	027
+
+# Enable the builtin emacs(1) command line editor in sh(1),
+# e.g. C-a -> beginning-of-line.
+set -o emacs
+
+# KDE stuff
+KDEDIR=/usr/local/kde4
+PATH=$PATH:$KDEDIR/bin
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$KDEDIR/lib
+LIBRARY_PATH=$LD_LIBRARY_PATH
+export KDEDIR PATH LD_LIBRARY_PATH LIBRARY_PATH
+
+GREP_COLOR='00;31' ; export GREP_COLOR
+
+# some useful aliases
+alias h='fc -l'
+alias j=jobs
+alias m="$PAGER"
+alias ll='ls -laFort'
+alias l='ls -lrt'
+alias L='ls -lrth'
+alias lS='ls -lrthS'
+alias grep='egrep --colour'
+alias g='grep -i'
+alias f='find '
+alias ..='cd ..'
+alias ...='cd .. && cd ..'
+alias msdos='sudo mount_msdosfs -u chem -o longnames '
+alias ssh_asa_qemu='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=`mktemp /tmp/asa-host-XXXXXX`'
+
+# Darcs related alias
+alias dr='darcs record -m "`date` at `hostname` on `uname`"'
+alias dn='darcs whatsnew -s'
+alias dp='darcs push'
+alias dl='darcs pull'
+
+# Qemu
+SDL_VIDEODRIVER=x11
+export SDL_VIDEODRIVER
+alias sqemu='screen -d -m qemu -boot c -nographic -net nic -net tap,script=no ~/os/images/debian/etch/debian-etch-stable-00.qcow2 &'
+alias sheart='screen -m -d qemu -m 64 -boot c -nographic -net nic,vlan=0,macaddr=52:54:00:12:34:56 -net tap,vlan=0,script=no -net nic,vlan=1,macaddr=52:54:00:12:34:57 -net tap,vlan=1,script=no ~/os/images/debian/etch/debian-etch-stable-00.qcow2 &'
+alias sheart0='screen -m -d qemu -nographic -m 64 -boot c -net nic,vlan=0,macaddr=52:54:00:12:34:56 -net tap,vlan=0,script=no -net nic,vlan=1,macaddr=52:54:00:12:34:57 -net tap,vlan=1,script=no ~/os/images/debian/etch/debian-etch-stable-00-beat0.qcow2'
+alias sheart1='screen -m -d qemu -nographic -m 64 -boot c -net nic,vlan=0,macaddr=52:54:00:12:34:58 -net tap,vlan=0,script=no -net nic,vlan=1,macaddr=52:54:00:12:34:59 -net tap,vlan=1,script=no ~/os/images/debian/etch/debian-etch-stable-00-beat1.qcow2'
+
+# xmonad
+alias rxmon="ghci $HOME/.xmonad/xmonad.hs"
+
+# Usefull at work
+alias  oftp='rdesktop -g 1024x768 -u h15oftp x25hubx'
+alias  cft='rdesktop -g 1024x768 -u h15cft x25hubx'
+alias  above='xrandr --output VGA-0 --above LVDS'
+
+# Catalyste development
+alias cats='CATALYST_DEBUG=0 ./script/*server.pl'
+alias catsd='./script/*server.pl -d -r'
+alias catsdd='CATALYST_DEBUG=0 perl -d ./script/*server.pl -d '
+alias catsddd='CATALYST_DEBUG=1 perl -d ./script/*server.pl -r '
+alias catsbd='DBIC_TRACE=1 ./script/*server.pl -d -r'
+alias catsbdd='DBIC_TRACE=1 CATALYST_DEBUG=0 perl -d ./script/*server.pl -d -r '
+alias catsbddd='CATALYST_DEBUG=1 DBIC_TRACE=1 perl -d ./script/*server.pl -r '
+alias catsp='APP_TEST=1 CATALYST_DEBUG=0 prove -l '
+
+# set prompt: ``username@hostname$ '' 
+#PS1="$LOGNAME@`hostname | sed 's/\..*//'`"
+#case `compat_id` in
+#	0) PS1="${PS1}# ";;
+#	*) PS1="${PS1}$ ";;
+#esac
+
+# Darcs related.
+DARCS_DONT_ESCAPE_8BIT=1
+DARCS_ALWAYS_COLOR=1
+export DARCS_ALWAYS_COLOR DARCS_DONT_ESCAPE_8BIT
+
+# less related
+LESS='-X -i'
+LESSHISTSIZE=500
+LESSCHARSET='utf-8'
+LESSOPEN='|lesspipe.sh %s'
+export LESS LESSHISTSIZE LESSCHARSET LESSOPEN
+
+# Perl
+find-perl-module-use()
+{
+    dir=${1:-lib};
+    (ack '^\s*use\s+[^;]+;\s*$' $dir | \
+        awk '{ print $2 }' | \
+        sed 's/();\?$\|;$//';
+        ack '^\s*use\s+base\s+.*;\s*$' $dir | \
+        awk '{ print $3 }' | \
+        sed 's/();\?$\|;$//'
+    ) | \
+        tr -d "'" | \
+        tr -d ";" | \
+        sort -u;
+}
+
+perl-module()
+{
+    perl -M"$1" -e+1 2>/dev/null \
+        && echo "Module \"$1\" installed" || echo "Module \"$1\" missing"
+}
+
+perl-mod-version()
+{
+    perl -M"$1"\ 9999 -e+1 2>&1 \
+        | perl -lne 'print if s/.*version ([0-9.]+)\./'"$1: "'$1/';
+}
+
+search_perl_path ()
+{
+    local mod="$1"
+    local base="`dirname $1`"
+    local name="`basename $1`"
+    if [ "${base}" = "." ]; then
+        base="";
+    else
+        base=" -ipath */`echo $base | perl -lpe 's|/?([^:]+)::|$1/|g'`/*"
+    fi
+
+    for i in `perl -e 'print "$_\n" for @INC'|sort -u | grep -v '^\.\.?$'`; do
+        find "$i" $base -iname "$name*" 2>/dev/null;
+    done
+}
+
+# R
+R_LIBS=$HOME/amd64-portbld-freebsd7.2-library/2.9
+export R_LIBS
+
+# Git
+git_create_new()
+{
+    [ -d ".git" ] && echo "Git already initialised, aborting" && return 2 
+    [ ! -e ".gitignore" ] && echo "Missing .gitignore, aborting..." && return 2 
+    git init
+    git add `git status --porcelain | awk '{print $2}'` 
+    git commit -a -m'Initial commit.'
+}
+
+alias gcn=git_create_new
+
+# Editor
+EDITOR="emacsclient --alternate-editor vi"  # Others.
+TEXEDIT="emacsclient -a vi" # TeX
+alias e="$EDITOR -t"
+alias E="$EDITOR -n"
+export TEXEDIT EDITOR
+
+# Some more specialised env.
+AT_WORK=`at_work`
+case $AT_WORK in
+    yes)
+        load_maybe $HOME/.shrc_work
+        ;;
+    no)
+        load_maybe $HOME/.shrc_home
+        ;;
+    *)
+        echo "Working or not working ?" >&2
+        ;;
+esac
+
+# opening term
+alias t='urxvtc -e sh -c "screen -aOUxr"'
+
+# Radios
+alias france-inter='mplayer -nocache -nolirc "mms://vip9.yacast.fr/encoderfranceinter"'
+alias france-culture='mplayer -nocache -nolirc "mms://viptvr.yacast.fr/tvr_franceculture?site"'
+alias france-info='mplayer -nocache -nolirc "mms://vip9.yacast.fr/encoderfranceinfo"'
+alias france-musique='mplayer -nocache -nolirc "mms://viptvr.yacast.fr/tvr_francemusiques?site"'
+alias radio-3WK='mplayer -nocache -nolirc "http://66.250.45.52:7600"'
+
+# a bit of everything
+alias bc='bc -lq'
+
+# Perl one-liners
+# show all modules file name or find a module file path matching argv.
+# result of : alias qfpm=perl\ -le\ "`shell-quote 'for (grep { m/^.*@ARGV\.pm$/ } map {glob("$_/*")} @INC) { print } '`"
+# in zsh.
+alias qfpm='perl -le ''for ( sort map { glob( join " $_", map { "/*" x $_ } 1..5 ) } @INC) { print "$1\e[00;31m$2\e[00;0m.pm" and $seen{$1}=1 if m/^(.*)(@ARGV)\.pm$/i and not defined $seen{$1} } '''
+
+#alias d=cal | perl -lne 'if (m/^(.*) ('$(date '+%d' | sed -e 's/^0//')') (.*)$/ ){ printf "%s \e[31m%s\e[0m %s\n",$1 ,$2 ,$3}else{print}'
+
+alias d=cal\ \|\ perl\ \-lne\ \'if\ \(m\/\^\(\.\*\)\ \($(date '+%d' | sed -e 's/^0//')\)\ \(\.\*\)\$\/\ \)\{\ printf\ \"\%s\ \\e\[31m\%s\\e\[0m\ \%s\\n\"\,\$1\ \,\$2\ \,\$3\}else\{print\}\'
+
+c ()
+{
+    tmux select-layout even-horizontal;
+    local cmd="ssh $@"
+    tmux split-window -p 50 "$cmd";
+    tmux rename-window "`echo $@ | perl -lpe 's/(?:[^@]+@)?([^\s]+).*$/$1/'`"
+}
+
+#_ssh ()
+#{
+#    local cmd="/usr/bin/ssh $@"
+#    $cmd;
+#    if [ ! -t 0 ]; then
+#        tmux rename-window \
+#            "`echo $@ | perl -lpe 's/(?:[^@]+@)?([^\s]+).*$/$1/'`"
+#    fi
+#}
+
+alias='sc=./script/*_server.pl'
+
+# JAVA
+JAVAHOME=/usr/local/jdk1.6.0/jre
+if [ -d "$JAVAHOME" ]; then
+    JAVA_HOME="$JAVAHOME"; export JAVA_HOME;
+fi
+
+# OS specificity
+
+case $SYSTEM in
+    Linux)
+        . $HOME/.shrc_$SYSTEM
+        ;;
+    *BSD)
+        . $HOME/.shrc_bsd
+        ;;
+    SunOS)
+        [ -f .profile_$SYSTEM ] && . $HOME/.profile_$SYSTEM
+        ;;
+    UNKNOWN)
+        echo "Where are we ?" >&2
+        ;;
+    *)
+        echo "Something wrong with shrc" >&2
+        ;;
+esac
+
+# So we're done
+SHRC="DONE";		export SHRC
