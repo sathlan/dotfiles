@@ -1,0 +1,4 @@
+# BSD style environment.
+
+# Files may be in /etc/local
+ETC_LOCAL="usr";	export ETC_LOCAL

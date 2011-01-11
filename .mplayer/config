@@ -1,0 +1,8 @@
+# Write your default config options here!
+
+#msglevel=all=5
+vo=xv
+vf=eq2
+ao=oss
+[gnome-mplayer]
+msglevel=all=5

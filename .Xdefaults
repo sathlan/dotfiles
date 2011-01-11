@@ -1,0 +1,139 @@
+! Test with xrdb -merge ~/.Xdefaults && xterm
+
+! Xterm
+XTerm*termName: xterm-256color
+!XTerm*background: #111111
+!XTerm*background: #233b5a
+!XTerm*foreground: LightSkyBlue
+!#51a366
+!!XTerm*background: Black
+!!XTerm*foreground: WhiteSmoke
+!!XTerm*color0: Black
+!!XTerm*color1: OrangeRed1
+!!XTerm*color2: OliveDrab3
+!!XTerm*color3: yellow3
+!!XTerm*color4: CornflowerBlue
+!!XTerm*color5: magenta3
+!!XTerm*color6: cyan3
+!!XTerm*color7: gray90
+!!XTerm*color8: gray50
+!!XTerm*color9:  red
+!!XTerm*color10: green
+!!XTerm*color11: yellow2
+!!XTerm*color12: lightslateblue
+!!XTerm*color13: magenta
+!!XTerm*color14: cyan
+!!XTerm*color15: white
+!!XTerm*colorBD: lightyellow
+!!XTerm*colorUL: lightblue
+XTerm*cursorColor:grey
+XTerm*dynamicColors:on
+XTerm*highlightSelection: true
+XTerm*eightBitInput:false
+XTerm*eightBitOutput:true
+XTerm*internalBorder:3
+XTerm*modifier:alt
+XTerm*scrollBar:false
+XTerm*titleInhibit:true
+XTerm*visualBell:true
+XTerm*loginShell:true
+XTerm*charClass: 33:48,35:48,37:48,43:48,45-47:48,64:48,95:48,126:48,35:48,58:48
+XTerm*cutNewline:false
+XTerm*cutToBeginningOfLine:false
+XTerm*saveLines: 1500 
+XTerm*scrollTtyOutput: false
+
+XTerm*font: -xos4-terminus-medium-r-normal--16-160-72-72-c-80-iso8859-1
+!*font: -xos4-terminus-medium-r-normal--16-160-72-72-c-80-iso8859-1
+! emacs
+Emacs.font: DejaVu Sans Mono-6
+!Emacs.Fontset-0:-xos4-terminus-medium-r-normal-*-16-160-*-72-c-80-fontset-utf,
+!        \
+!        mule-utf-8:-xos4-terminus-medium-r-normal-*-16-160-*-72-c-80-iso10646-1
+!Emacs.Font: fontset-utf
+!
+XTerm*background: gray15
+XTerm*foreground: darkkhaki
+
+! Xterm
+Rxvt*termName: xterm-256color
+!!Rxvt*background: Black
+!!Rxvt*foreground: WhiteSmoke
+!Rxvt*background: #233b5a
+!Rxvt*foreground: LightSkyBlue
+Rxvt*saveLines: 1500 
+Rxvt*modifier: Mod1
+Rxvt*font: -xos4-terminus-medium-r-normal--16-*-*-*-*-*-iso10646-1
+
+Rxvt*background: gray15
+Rxvt*foreground: darkkhaki
+Rxvt*scrollBar:  no
+
+!! Greenish theme
+*color0:       #000000
+*color8:       #666666
+!! DarkRed + Red
+*color1:       #b45151
+*color9:       #fe8686
+!! DarkGreen + Green
+*color2:       #8ba574
+*color10:      #a5dca5
+!! DarkYellow + Yellow
+*color3:       Khaki3
+*color11:      #efe58b
+!! DarkBlue + Blue
+*color4:       #2797d8
+*color12:      #86cdea
+!! DarkMangenta + Mangenta
+*color5:       #aa6eaf
+*color13:      #b698b8
+!!DarkCyan + Cyan
+*color6:       #418179
+*color14:      #71bebe
+!! LightGrey + White
+*color7:       #bebebe
+*color15:      #ffffff
+
+*Foreground:   LightSkyBlue
+*Background:   #233b5a
+*.foreground:   LightSkyBlue
+*.background:   #233b5a
+
+!! xpdf
+xpdf.matteColor: #233b5a
+xpdf*Foreground: gray
+
+!! Emacs
+Emacs.foreground:			LightSkyBlue
+Emacs.background:			#233b5a
+! pop-up
+Emacs.menu*.foreground:			LightSkyBlue
+Emacs.menu*.background:			#233b5a
+Emacs.menu*.fontList:			xos4-terminus-medium-r-normal--16-160-72-72-c-80-iso8859-1
+! file-selection
+Emacs.fsb*.foreground:			LightSkyBlue
+Emacs.fsb*.background:			#233b5a
+! dialog boxes
+Emacs.dialog*.foreground:		LightSkyBlue
+Emacs.dialog*.background:		#233b5a
+! menu-bar (the text list of actions available, on top of window)
+Emacs.pane.menubar.foreground:          red
+Emacs.pane.menubar.*.background:	#233b5a
+Emacs.pane.menubar.*.fontList:		-xos4-terminus-medium-r-normal--16-160-72-72-c-80-iso8859-1
+Emacs.pane.menubar.popup_*.foreground:  LightSkyBlue
+Emacs.*.menubar.*.topShadowColor:	LightSkyBlue
+Emacs.*.menubar.*.bottomShadowColor:	orange
+
+!Emacs.pane.menubar.*.fontList:  8x16
+!Emacs.font: DejaVu Sans Mono-10
+!emacs.ToolBar: 0
+!! XDM
+xlogin.Login.allowRootLogin:    false
+
+URxvt.saveLines:32767
+URxvt.scrollBar: false
+
+URxvt.depth: 32
+URxvt*background: rgba:0000/0000/0000/cccc
+
+

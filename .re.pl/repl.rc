@@ -1,0 +1,4 @@
+$_REPL->load_plugin('Timing');
+$_REPL->load_plugin('History');
+$_REPL->load_plugin('LexEnv');
+$_REPL->load_plugin($_) for qw(DDS Packages MultiLine::PPI Completion Colors ReadLineHistory ShowClass);

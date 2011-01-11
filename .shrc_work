@@ -1,0 +1,74 @@
+# for people
+alias kbdfr="setxkbmap fr"
+alias kbddv="setxkbmap dvorak"
+
+WORK_PARA_F=$HOME/.`hostname`
+[ -e $WORK_PARA_F ] && . $WORK_PARA_F
+
+# mount smb share (requires mount_smbfs setuid)
+if [ `find /partages/enovance/Technique -maxdepth 1 -type f | wc -l` -eq 0 ]; then
+   mount -a -t smbfs -l
+fi
+
+# Usefull function
+create_call () {
+    local call="$1";
+    local where="$2";
+    ssh "$where" mkdir work/$call
+    [ -e "$3" ] && scp  "$where:work/$call" 
+    echo work/$call
+}
+
+# documentation
+get_doc_subnet ()
+{
+        local doc="$PARTAGES/Technique/Infras/$DOC_SUB"
+        [ -e "$doc" ] && cp $doc "$HOME/work/$CORP/$DOC_SUB"
+        [ -e "$doc" ] || doc="$HOME/work/$CORP/$DOC_SUB"
+        openoffice.org-3.2.0 "$doc" >/dev/null 2>&1 &
+}
+get_doc_as ()
+{
+        local doc="$PARTAGES/Technique/Infras/$DOC_AS"
+        [ -e "$doc" ] && cp $doc "$HOME/work/$CORP/$DOC_AS"
+        [ -e "$doc" ] || doc="$HOME/work/$CORP/$DOC_AS"
+        openoffice.org-3.2.0 "$doc" >/dev/null 2>&1 &
+}
+
+alias gds=get_doc_subnet
+alias gda=get_doc_as
+
+# Avoid warning for the select command if under sh
+COMMENT=""
+if [ "$SHELL" = "/bin/sh" ]; then
+     COMMENT="echo"
+fi
+
+jdm ()
+{
+    sudo echo
+    if ! jls | grep -q debian; then
+        sudo /etc/rc.d/jail onestart debian
+    fi
+    local ip=`jls | awk '/debian/{print $2}'`
+    if ! xhost | grep -q $ip; then
+        xhost +$ip
+    fi
+    if [ -z "$1" ]; then
+        $COMMENT select switch in $SWITCHS ; $COMMENT do
+        . ~/.communities
+        eval local community_rd=\$`echo -n $CORP | tr [a-z] [A-Z]`_RD
+        eval local community_wr=\$`echo -n $CORP | tr [a-z] [A-Z]`_WR
+    	local ip=`echo $switch | awk -F: '{print $2}'`
+        eval local spec_com_rd=\$"ip_`echo $ip | tr '.' '_'`_rd"
+        eval local spec_com_wr=\$"ip_`echo $ip | tr '.' '_'`_wr"
+        if [ -n "$spec_com_rd" ]; then community_rd=$spec_com_rd; community_wr=$spec_com_wr; fi
+        sudo jexec -u $USER `jls | awk '/debian/ {print $1}'` $SWITCH_CMD -rd $community_rd -wr $community_wr $ip >/dev/null 2>&1
+        $COMMENT done
+    else
+        eval local spec_com_rd=\$"ip_`echo $1 | tr '.' '_'`_rd"
+        eval local spec_com_wr=\$"ip_`echo $1 | tr '.' '_'`_wr"
+        if [ -n "$spec_com_rd" ]; then community_rd=$spec_com_rd; community_wr=$spec_com_wr; fi
+        sudo jexec -u $USER `jls | awk '/debian/ {print $1}'` $SWITCH_CMD -rd $community_rd -wr $community_wr $1 >/dev/null 2>&1
+    fi
+}

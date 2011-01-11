@@ -1,0 +1,7 @@
+# GNU/Linux environment.
+
+# Debian don't add them by default
+PATH=/sbin:/usr/sbin:$PATH
+
+# File are not in /etc/local, never
+ETC_LOCAL="";		export ETC_LOCAL

@@ -1,0 +1,11 @@
+# SunOS style environment.
+
+# Path are weirds on those env, man as well.
+WEIRD_PATH=/opt/sfw:/opt/csw:/opt/sfw:/opt/SUNWconn:/opt/SUNWrtvc:/opt/SUNWconn/HSIP:/opt/rsc:/usr/5bin:/usr/ccs:$PATH
+for AROUND in `echo $WEIRD_PATH | /bin/sed -e 's/:/ /g'`; do
+    [ -d $AROUND/bin ] && PATH=$AROUND/bin:$PATH
+    [ -d $AROUND/man ] && MANPATH=$AROUND/man:$MANPATH
+done
+MANPATH=/usr/share/man:$MANPATH
+PATH=/usr/xpg4/bin:$PATH
+

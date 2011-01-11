@@ -1,0 +1,83 @@
+# BSD style interactive environment.
+
+# enable color support
+if [ "$TERM" != "dumb" ]; then
+    alias 'ls=ls -GF'
+fi
+
+# Package administration shortcuts
+alias pta='sudo portaudit -Fda '
+alias pts='sudo portsnap fetch update '
+alias ptu='sudo sysctl dev.acpi_ibm.0.fan=0;sudo sysctl dev.acpi_ibm.0.fan_level=7; sudo portupgrade '
+alias ptv='sudo sh -c "pkg_version -vL= | tee /var/log/pkg_version"'
+alias ptd='sudo portdowngrade -s :pserver:anoncvs@anoncvs.fr.FreeBSD.org:/home/ncvs '
+alias sfan='sudo /etc/rc.d/powerd start;sudo sysctl dev.acpi_ibm.0.fan=1;'
+alias ufan='sudo sysctl dev.acpi_ibm.0.fan=0;sudo sysctl dev.acpi_ibm.0.fan_level=7;sudo /etc/rc.d/powerd stop ;sudo sysctl dev.cpu.0.freq=1400'
+
+# Autres
+alias lpr='/usr/local/bin/lpr'
+
+# Network
+nst ()
+{
+    for i in `sudo pfctl -s Tables 2>/dev/null`;do
+        echo "$i:"
+        sudo pfctl -t $i -Tshow 2>/dev/null
+    done
+}
+
+nvpn_down ()
+{
+    sudo vpnc-disconnect
+    for i in `sudo pfctl -s Tables 2>/dev/null`;do
+        echo $i | egrep -q 'vpn_' && sudo pfctl -t $i -Tflush 2>/dev/null
+    done
+}
+
+alias nvpn_up="sudo $HOME/bin/vpnc.sh"
+
+get_perl_example ()
+{
+    set -e
+    local package="$1";
+    local port="$package";
+    local tmpd='/tmp/p5-ex';
+    local old_dir="$PWD";
+    local sd='/usr/ports';
+
+    if echo "$1" | grep -q '::' || echo "$1" | grep -v -q '^p5'; then
+        port=p5-`echo $package | sed 's/::/-/g'`;
+    fi
+    local ex="$HOME/share/examples/$port"
+    local portds="` export display="path" ; \
+	(cd $sd && make search name=$port | awk '{print \$2}')`"
+    local portd="";
+##    select p in $portds; do
+#    	portd="$p";
+#        [ -n "$portd" ] && break;
+#    done
+    
+    mkdir -p $ex;
+    rm -rf $tmpd
+    mkdir -p $tmpd
+
+    cd $tmpd
+    cp -a $portd .
+    cd *;
+    make extract;
+    cd work/[A-Za-z0-9]*
+    cp -a * $ex
+    cd $old_dir
+    echo "Examples copied to $ex";
+    set +e;
+}
+
+search_perl_pkg ()
+{
+    local pkg="$1";
+    local odir="$PWD";
+    cd /usr/ports;
+    export display="name,path,info"
+    make search name=p5-`echo -n $pkg| tr -s ':' | tr : -`
+    cd "$odir"
+}

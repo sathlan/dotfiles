@@ -1,0 +1,114 @@
+
+[fw-01]
+description=Firewall Work (192.0.2.2 on tap2)
+nographic
+net=nic,macaddr=06:00:00:00:00:02
+net=tap,script=no,ifname=tap2
+net=nic,macaddr=06:00:00:00:00:03
+net=tap,script=no,ifname=tap65,script=if-bridge0
+m=256
+hda=/home/chem/vps/machines/debian/fw-01-d1.qcow2
+boot=c
+
+[vz-01]
+description=Serveur OpenVZ Work (from fw-01 )
+nographic
+net=nic,macaddr=06:00:00:00:00:66
+net=tap,script=no,ifname=tap66,script=if-bridge0
+m=1024
+hda=/home/chem/vps/machines/debian/vz-01-d1.qcow2
+boot=c
+
+[os-centos55]
+description=Provide rhel55 compatible environnement (192.0.2.92 on tap92)
+nographic
+net=nic,macaddr=06:00:00:00:00:92
+net=tap,script=no,ifname=tap92,script=if-bridge0
+m=256
+hda=/home/chem/vps/machines/centos/os-centos55.qcow2
+boot=c
+
+[hn-01-amd64]
+description=Serveur OpenVZ Work (192.0.2.132 on tap132 accessible from fw-0[12]-amd64)
+nographic
+system=x86_64
+net=nic,macaddr=06:00:00:00:00:84,vlan=1
+net=tap,ifname=tap132,vlan=1,script=if-bridge2
+m=1024
+hda=/home/chem/vps/machines/debian/hn-01-d1.qcow2
+boot=c
+
+[fw-01-amd64]
+description=Firewall Work 64bit (192.0.2.77 on tap2 (+tap78))
+system=x86_64
+nographic
+net=nic,macaddr=06:00:00:00:00:11,vlan=2
+net=tap,ifname=tap11,vlan=2,script=if-bridge3
+net=nic,macaddr=06:00:00:00:00:78,vlan=1
+net=tap,ifname=tap78,vlan=1,script=if-bridge2
+net=nic,macaddr=06:00:00:00:00:77,vlan=0
+net=tap,ifname=tap2,vlan=0,script=if-bridge0
+m=512
+hda=/home/chem/vps/machines/debian/fw-01-x86_64.d1.qcow2
+boot=c
+
+[fw-02-amd64]
+description=Firewall Work 64bit 2 (192.0.2.79 on tap79 (+tap80))
+system=x86_64
+nographic
+net=nic,macaddr=06:00:00:00:00:12,vlan=2
+net=tap,script=no,ifname=tap12,vlan=2,script=if-bridge3
+net=nic,macaddr=06:00:00:00:00:80,vlan=1
+net=tap,script=no,ifname=tap80,vlan=1,script=if-bridge2
+net=nic,macaddr=06:00:00:00:00:79,vlan=0
+net=tap,script=no,ifname=tap79,vlan=0,script=if-bridge0
+m=512
+hda=/home/chem/vps/machines/debian/fw-02-x86_64.d1.qcow2
+boot=c
+
+[ocde]
+description=Connection box (!!!! 10.192.2.50 on tap50 + ifconfig bridge0 10.192.2.51)
+net=nic,model=e1000,macaddr=10:01:02:03:04:25,vlan=50
+net=tap,ifname=tap50,vlan=50,script=if-bridge10
+m=512
+localtime
+hda=/home/chem/vps/machines/debian/deb-vpn-ocde.img
+nographic
+
+[os-centos55-open]
+description=Provide rhel55 compatible environnement (192.0.2.92 on tap92)
+nographic
+net=nic,macaddr=06:00:00:00:00:92,vlan=92
+net=tap,ifname=tap92,script=if-bridge0,vlan=92
+m=512
+hda=/home/chem/vps/machines/centos/centos-5.5-0.3.qcow2
+boot=c
+
+[os-centos55-RAD]
+description=For OpenVPN (10.192.2.50)
+nographic
+net=nic,macaddr=06:00:00:00:00:93,vlan=93
+net=tap,ifname=tap93,script=if-bridge10,vlan=93
+m=512
+hda=/home/chem/vps/machines/centos/centos-5.5-0-RAD-02.qcow2
+boot=c
+
+[Win-XP]
+description=Win XP station (vncserver on 192.0.2.94)
+net=nic,macaddr=06:00:00:00:00:94,vlan=94
+net=tap,ifname=tap94,script=if-bridge0,vlan=94
+m=512
+hda=/home/chem/vps/machines/win/XP-1.qcow2
+nographic
+boot=c
+
+[asa-5550]
+description=ASA 5550 simulated (8.0 - ssh_asa_qemu 10.192.2.2)
+nographic
+net=nic,macaddr=06:00:00:00:00:95,vlan=95,model=pcnet
+net=tap,ifname=tap95,script=if-bridge10,vlan=95
+net=nic,macaddr=06:00:00:00:00:96,vlan=96,model=pcnet
+net=tap,ifname=tap96,script=if-bridge0,vlan=96
+m=256
+hda=/home/chem/vps/machines/cisco/asa-1.4.iso
+boot=c
