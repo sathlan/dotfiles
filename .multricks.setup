@@ -10,7 +10,7 @@ use IkiWiki::Setup::Standard {
 	# name of the wiki
 	wikiname => 'multricks',
 	# contact email for wiki
-	adminemail => 'chem@z88.lan2wan2.net.net',
+	adminemail => 'chem',
 	# users who are wiki admins
 	adminuser => [qw{chem}],
 	# users who are banned from the wiki
@@ -20,9 +20,9 @@ use IkiWiki::Setup::Standard {
 	# where to build the wiki
 	destdir => '/home/chem/.local/var/public_html/multricks',
 	# base url to the wiki
-	url => 'http://z88.lan2wan2.net.net/~chem/multricks',
+	url => 'http://localhost/~chem/multricks',
 	# url to the ikiwiki.cgi
-	cgiurl => 'http://z88.lan2wan2.net.net/~chem/multricks/ikiwiki.cgi',
+	cgiurl => 'http://localhost/~chem/multricks/ikiwiki.cgi',
 	# filename of cgi wrapper to generate
 	cgi_wrapper => '/home/chem/.local/var/public_html/multricks/ikiwiki.cgi',
 	# mode for cgi_wrapper (can safely be made suid)
@@ -30,7 +30,7 @@ use IkiWiki::Setup::Standard {
 	# rcs backend to use
 	rcs => 'git',
 	# plugins to add to the default configuration
-	add_plugins => [qw{goodstuff websetup comments blogspam calendar sidebar}],
+	add_plugins => [qw{goodstuff websetup opendiscussion blogspam calendar sidebar html htmlscrubber favicon version pagestats lockedit passwordauth blogspam comments previous}],
 	# plugins to disable
 	disable_plugins => [],
 	# additional directory to search for template files
@@ -38,7 +38,7 @@ use IkiWiki::Setup::Standard {
 	# base wiki source location
 	underlaydir => '/home/chem/.local/share/ikiwiki/basewiki',
 	# display verbose messages?
-	#verbose => 1,
+	verbose => 1,
 	# log to syslog?
 	syslog => 1,
 	# create output files named page/index.html?
@@ -74,9 +74,9 @@ use IkiWiki::Setup::Standard {
 	# group for wrappers to run in
 	#wrappergroup => 'ikiwiki',
 	# extra library and plugin directory
-	libdir => '/home/chem/.ikiwiki',
+	libdir => '/home/chem/.local/lib/perl5',
 	# environment variables
-	ENV => {},
+	ENV => qw{PERL5LIB},
 	# regexp of normally excluded files to include
 	#include => '^\\.htaccess$',
 	# regexp of files that should be skipped
@@ -107,9 +107,9 @@ use IkiWiki::Setup::Standard {
 	# gitweb url to show a diff ([[file]], [[sha1_to]], [[sha1_from]], [[sha1_commit]], and [[sha1_parent]] substituted)
 	#diffurl => 'http://git.example.com/gitweb.cgi?p=wiki.git;a=blobdiff;f=[[file]];h=[[sha1_to]];hp=[[sha1_from]];hb=[[sha1_commit]];hpb=[[sha1_parent]]',
 	# where to pull and push changes (set to empty string to disable)
-	#gitorigin_branch => 'origin',
+	gitorigin_branch => 'origin',
 	# branch that the wiki is stored in
-	#gitmaster_branch => 'master',
+	gitmaster_branch => 'master',
 
 	# htmlscrubber plugin
 	# PageSpec specifying pages not to scrub
@@ -121,11 +121,11 @@ use IkiWiki::Setup::Standard {
 	# enable atom feeds by default?
 	atom => 1,
 	# allow rss feeds to be used?
-	#allowrss => 0,
+	allowrss => 1,
 	# allow atom feeds to be used?
 	#allowatom => 0,
 	# urls to ping (using XML-RPC) on feed update
-	#pingurl => 'http://rpc.technorati.com/rpc/ping',
+	pingurl => [],
 
 	######################################################################
 	# auth plugins
@@ -141,9 +141,10 @@ use IkiWiki::Setup::Standard {
 	# PageSpec of pages to check for spam
 	blogspam_pagespec => 'postcomment(*)',
 	# options to send to blogspam server
-	#blogspam_options => 'blacklist=1.2.3.4,blacklist=8.7.6.5,max-links=10',
+        blogspam_options => 'fail',
+	#blogspam_options => 'fail,blacklist=1.2.3.4,whitelist=127.0.0.1,max-links=10',
 	# blogspam server XML-RPC url
-	#blogspam_server => '',
+	#blogspam_server => 'http://test.blogspam.net:8888/',
 
 	# httpauth plugin
 	# url to redirect to when authentication is needed
@@ -206,9 +207,8 @@ use IkiWiki::Setup::Standard {
 
 	######################################################################
 	# web plugins
-	#   (404, attachment, comments, editdiff, edittemplate, getsource,
-	#    google, goto, mirrorlist, remove, rename, repolist, search,
-	#    theme, websetup, wmd)
+	#   (404, attachment, comments, editdiff, edittemplate, google,
+	#    goto, mirrorlist, repolist, search, theme, websetup, wmd)
 	######################################################################
 
 	# attachment plugin
@@ -221,19 +221,15 @@ use IkiWiki::Setup::Standard {
 	# PageSpec of pages where comments are allowed
 	comments_pagespec => 'posts/* and !*/Discussion',
 	# PageSpec of pages where posting new comments is not allowed
-	#comments_closed_pagespec => 'blog/controversial or blog/flamewar',
+	comments_closed_pagespec => '',
 	# Base name for comments, e.g. "comment_" for pages like "sandbox/comment_12"
-	#comments_pagename => '',
+	comments_pagename => 'comment_',
 	# Interpret directives in comments?
 	#comments_allowdirectives => 0,
 	# Allow anonymous commenters to set an author name?
 	#comments_allowauthor => 0,
 	# commit comments to the VCS
-	#comments_commit => 1,
-
-	# getsource plugin
-	# Mime type for returned source.
-	#getsource_mimetype => 'text/plain; charset=utf-8',
+	comments_commit => 1,
 
 	# mirrorlist plugin
 	# list of mirrors
@@ -245,7 +241,7 @@ use IkiWiki::Setup::Standard {
 
 	# search plugin
 	# path to the omega cgi program
-	#omega_cgi => '/usr/lib/cgi-bin/omega/omega',
+	omega_cgi => '/usr/local/www/xapian-omega/cgi-bin/omega',
 
 	# theme plugin
 	# name of theme to enable
@@ -255,9 +251,9 @@ use IkiWiki::Setup::Standard {
 	# list of plugins that cannot be enabled/disabled via the web interface
 	#websetup_force_plugins => [],
 	# list of additional setup field keys to treat as unsafe
-	#websetup_unsafe => [],
+	websetup_unsafe => [],
 	# show unsafe settings, read-only, in web interface?
-	#websetup_show_unsafe => 1,
+	websetup_show_unsafe => 1,
 
 	######################################################################
 	# widget plugins
@@ -276,7 +272,7 @@ use IkiWiki::Setup::Standard {
 
 	# listdirectives plugin
 	# directory in srcdir that contains directive descriptions
-	#directive_description_dir => 'ikiwiki/directive',
+	directive_description_dir => 'ikiwiki/directive',
 
 	# teximg plugin
 	# Should teximg use dvipng to render, or dvips and convert?
@@ -304,7 +300,7 @@ use IkiWiki::Setup::Standard {
 
 	# aggregate plugin
 	# enable aggregation to internal pages?
-	#aggregateinternal => 1,
+	aggregateinternal => 1,
 	# allow aggregation to be triggered via the web?
 	#aggregate_webtrigger => 0,
 
@@ -322,13 +318,13 @@ use IkiWiki::Setup::Standard {
 
 	# prettydate plugin
 	# format to use to display date
-	#prettydateformat => '%X, %B %o, %Y',
+	prettydateformat => '%X, %B %o, %Y',
 
 	# recentchanges plugin
 	# name of the recentchanges page
-	#recentchangespage => 'recentchanges',
+	recentchangespage => 'recentchanges',
 	# number of changes to track
-	#recentchangesnum => 100,
+	recentchangesnum => 100,
 
 	# rsync plugin
 	# command to run to sync updated pages
@@ -336,13 +332,13 @@ use IkiWiki::Setup::Standard {
 
 	# sidebar plugin
 	# show sidebar page on all pages?
-	global_sidebars => 0,
+	global_sidebars => 1,
 
 	# tag plugin
 	# parent page tags are located under
 	tagbase => 'tags',
 	# autocreate new tag pages?
-	#tag_autocreate => 1,
+	tag_autocreate => 1,
 
 	# underlay plugin
 	# extra underlay directories to add
