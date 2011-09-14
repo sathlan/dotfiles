@@ -19,24 +19,51 @@ create_call () {
     echo work/$call
 }
 
+# mount partage
+mount_all_work ()
+{
+    for i in `awk '/enovance/{print $2}' /etc/fstab`;do
+        mount $i;
+    done
+}
+
+test_mount_work()
+{
+    if ! mount | grep -q enovance; then
+        mount_all_work;
+    fi
+    
+}
+
 # documentation
 get_doc_subnet ()
 {
-        local doc="$PARTAGES/Technique/Infras/$DOC_SUB"
+    test_mount_work
+        local doc="$PARTAGES/technique/Infras/$DOC_SUB"
         [ -e "$doc" ] && cp $doc "$HOME/work/$CORP/$DOC_SUB"
         [ -e "$doc" ] || doc="$HOME/work/$CORP/$DOC_SUB"
-        openoffice.org-3.2.0 "$doc" >/dev/null 2>&1 &
+        screen -d -m openoffice.org-3.2.0 "$doc" >/dev/null 2>&1 &
 }
 get_doc_as ()
 {
-        local doc="$PARTAGES/Technique/Infras/$DOC_AS"
+    test_mount_work
+        local doc="$PARTAGES/technique/Infras/$DOC_AS"
         [ -e "$doc" ] && cp $doc "$HOME/work/$CORP/$DOC_AS"
         [ -e "$doc" ] || doc="$HOME/work/$CORP/$DOC_AS"
-        openoffice.org-3.2.0 "$doc" >/dev/null 2>&1 &
+        screen -d -m openoffice.org-3.2.0 "$doc" >/dev/null 2>&1 &
+}
+get_doc_ln ()
+{
+    test_mount_work
+    local doc="$PARTAGES/technique/Infras/$DOC_LN"
+        [ -e "$doc" ] && cp $doc "$HOME/work/$CORP/$DOC_AS"
+        [ -e "$doc" ] || doc="$HOME/work/$CORP/$DOC_AS"
+        screen -d -m openoffice.org-3.2.0 "$doc" >/dev/null 2>&1 &
 }
 
 alias gds=get_doc_subnet
 alias gda=get_doc_as
+alias gdl=get_doc_ln
 
 # Avoid warning for the select command if under sh
 COMMENT=""
