@@ -46,7 +46,7 @@ XTerm*scrollTtyOutput: false
 XTerm*font: -xos4-terminus-medium-r-normal--16-160-72-72-c-80-iso8859-1
 !*font: -xos4-terminus-medium-r-normal--16-160-72-72-c-80-iso8859-1
 ! emacs
-Emacs.font: DejaVu Sans Mono-6
+Emacs.font: DejaVu Sans Mono-7
 !Emacs.Fontset-0:-xos4-terminus-medium-r-normal-*-16-160-*-72-c-80-fontset-utf,
 !        \
 !        mule-utf-8:-xos4-terminus-medium-r-normal-*-16-160-*-72-c-80-iso10646-1
