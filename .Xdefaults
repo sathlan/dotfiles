@@ -137,3 +137,5 @@ URxvt.depth: 32
 URxvt*background: rgba:0000/0000/0000/cccc
 
 
+URxvt.smallfont_key: less
+URxvt.bigfont_key: greater
