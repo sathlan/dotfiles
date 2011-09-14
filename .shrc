@@ -258,7 +258,7 @@ sshcp ()
 }
 
 # do not center images on book from install-chm
-chm-no-center()
+chm_no_center()
 {
     local dir="${1:?Must supply the base directory.}"
     find "$dir" -type f -iregex '.*\.htm[l]\{0,1\}' -print0 | \
@@ -457,7 +457,7 @@ LESSOPEN='|lesspipe.sh %s'
 export LESS LESSHISTSIZE LESSCHARSET LESSOPEN
 
 # Perl
-find-perl-module-use()
+find_perl_module_use()
 {
     dir=${1:-lib};
     (ack '^\s*use\s+[^;]+;\s*$' $dir | \
@@ -472,13 +472,13 @@ find-perl-module-use()
         sort -u;
 }
 
-perl-module()
+perl_module()
 {
     perl -M"$1" -e+1 2>/dev/null \
         && echo "Module \"$1\" installed" || echo "Module \"$1\" missing"
 }
 
-perl-mod-version()
+perl_mod_version()
 {
     perl -M"$1"\ 9999 -e+1 2>&1 \
         | perl -lne 'print if s/.*version ([0-9.]+)\./'"$1: "'$1/';
