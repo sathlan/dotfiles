@@ -6,9 +6,9 @@ WORK_PARA_F=$HOME/.`hostname`
 [ -e $WORK_PARA_F ] && . $WORK_PARA_F
 
 # mount smb share (requires mount_smbfs setuid)
-if [ `find /partages/enovance/Technique -maxdepth 1 -type f | wc -l` -eq 0 ]; then
-   mount -a -t smbfs -l
-fi
+#if [ `find /partages/enovance/Technique -maxdepth 1 -type f | head | wc -l` -eq 0 ]; then
+#   mount -a -t smbfs -l
+#fi
 
 # Usefull function
 create_call () {
