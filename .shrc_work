@@ -82,7 +82,7 @@ jdm ()
         xhost +$ip
     fi
     if [ -z "$1" ]; then
-        $COMMENT select switch in $SWITCHS ; $COMMENT do
+        select switch in $SWITCHS ; do
         . ~/.communities
         eval local community_rd=\$`echo -n $CORP | tr [a-z] [A-Z]`_RD
         eval local community_wr=\$`echo -n $CORP | tr [a-z] [A-Z]`_WR
@@ -91,7 +91,7 @@ jdm ()
         eval local spec_com_wr=\$"ip_`echo $ip | tr '.' '_'`_wr"
         if [ -n "$spec_com_rd" ]; then community_rd=$spec_com_rd; community_wr=$spec_com_wr; fi
         sudo jexec -u $USER `jls | awk '/debian/ {print $1}'` $SWITCH_CMD -rd $community_rd -wr $community_wr $ip >/dev/null 2>&1
-        $COMMENT done
+        done
     else
         eval local spec_com_rd=\$"ip_`echo $1 | tr '.' '_'`_rd"
         eval local spec_com_wr=\$"ip_`echo $1 | tr '.' '_'`_wr"
