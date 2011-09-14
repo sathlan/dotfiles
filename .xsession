@@ -31,15 +31,6 @@ for fifo in ${FIFO_LST}; do
     [ -p $fifo ] || exit
 done
 
-# http://forum.bepo.fr/viewtopic.php?pid=3066
-# http://webcache.googleusercontent.com/search?q=cache:0dU516nDIj0J:xahlee.org/emacs/emacs_n_unicode.html+emacs+ELatin+input&cd=2&hl=fr&ct=clnk&gl=fr&client=firefox-a&source=www.google.fr
-# http://fedoraproject.org/wiki/I18N/InputMethods
-# http://code.google.com/p/uim/
-# http://en.wikibooks.org/wiki/Uim/Setup
-export GTK_IM_MODULE='uim'  # Instructs the GTK immodule to use uim
-export QT_IM_MODULE='uim'   # Instructs the Qt immodule to use uim
-export XMODIFIERS='@im=uim' # Instructs XIM to use uim
-
 [ -e $WALLP ] && /usr/local/bin/xpmroot -r $WALLP
 xscreensaver-command -exit
 xscreensaver &
