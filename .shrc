@@ -373,6 +373,21 @@ install_chm()
     sudo chown -R '/home/d/www/doc'
 }
 
+netstat ()
+{
+    local NETSTAT='/usr/bin/netstat';
+    if [ "$1" = "-pant" ]; then
+        $NETSTAT -ptcp -an
+    elif [ "$1" = '-pantu' ]; then
+        $NETSTAT -finet -an
+        $NETSTAT -finet6 -an
+    elif [ "$1" = '-panu' ]; then
+        $NETSTAT -pudp -an
+    else
+        $NETSTAT $@
+    fi
+}
+
 # file permissions: rwxr-x--
 umask	027
 
@@ -404,7 +419,7 @@ alias ..='cd ..'
 alias ...='cd .. && cd ..'
 alias msdos='sudo mount_msdosfs -u chem -o longnames '
 alias ssh_asa_qemu='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=`mktemp /tmp/asa-host-XXXXXX`'
-
+alias b='screen -d -m '
 # Darcs related alias
 alias dr='darcs record -m "`date` at `hostname` on `uname`"'
 alias dn='darcs whatsnew -s'
@@ -422,12 +437,7 @@ alias sheart1='screen -m -d qemu -nographic -m 64 -boot c -net nic,vlan=0,macadd
 # xmonad
 alias rxmon="ghci $HOME/.xmonad/xmonad.hs"
 
-# Usefull at work
-alias  oftp='rdesktop -g 1024x768 -u h15oftp x25hubx'
-alias  cft='rdesktop -g 1024x768 -u h15cft x25hubx'
-alias  above='xrandr --output VGA-0 --above LVDS'
-
-# Catalyste development
+# Catalyst development
 alias cats='CATALYST_DEBUG=0 ./script/*server.pl'
 alias catsd='./script/*server.pl -d -r'
 alias catsdd='CATALYST_DEBUG=0 perl -d ./script/*server.pl -d '
@@ -455,6 +465,35 @@ LESSHISTSIZE=500
 LESSCHARSET='utf-8'
 LESSOPEN='|lesspipe.sh %s'
 export LESS LESSHISTSIZE LESSCHARSET LESSOPEN
+
+# detach
+alias xpdf='b xpdf '
+alias xchm='b xchm '
+
+
+# Make more wind.  Compilation on hot day make the computer goes to
+# 105C, so here's I force the fan and lower the max speed of the CPU
+windmore()
+{
+    local level="${2:-1}"
+    
+    case $1 in
+        on)
+            sudo /etc/rc.d/powerd stop 2>/dev/null
+            sudo sysctl dev.cpu.0.freq=`sysctl -n dev.cpu.0.freq_levels | \
+				perl -ne '@f=split; print [split "/",$f['$level']]->[0]'`
+            sudo sysctl dev.acpi_ibm.0.fan=0; sudo sysctl dev.acpi_ibm.0.fan_level=7;
+            ;;
+        off)
+            sudo /etc/rc.d/powerd restart 2>/dev/null
+            sudo sysctl dev.acpi_ibm.0.fan=1
+            ;;
+        *)
+            echo "$0 <on|off>" >&2
+            return 1
+            ;;
+    esac
+}
 
 # Perl
 find_perl_module_use()
@@ -578,7 +617,10 @@ c ()
 #    fi
 #}
 
-alias='sc=./script/*_server.pl'
+alias sc='./script/*_server.pl'
+
+# Sudo and LS_COLORS don't mix well
+alias sudo='unset LS_COLORS; sudo '
 
 # JAVA
 JAVAHOME=/usr/local/jdk1.6.0/jre
