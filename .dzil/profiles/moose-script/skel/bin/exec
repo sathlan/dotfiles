@@ -1,0 +1,25 @@
+#!/usr/bin/env perl
+use MooseX::Runnable::Run '{{$name}}';
+use version; our $VERSION = qv('0.01_00');
+
+# ABSTRACT: Simple script ...
+# PODNAME: exec
+
+=head1 SYNOPSIS
+
+exec ...
+
+=cut
+
+=head1 SEE ALSO
+
+=for :list
+* L<{{$name}}
+
+=cut
+
+
+# Local Variables:
+# mode: cperl
+# End
+1;
