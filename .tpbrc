@@ -21,7 +21,7 @@ NVRAM .acpi-ibm-display
 # button is pressed. It is possible to execute any program.
 # By default no command is executed.
 #
-THINKPAD    switch_to_console
+THINKPAD    /home/chem/bin/switch_to_console
 
 ## HOME
 # String with command and options that should be executed when Home button is
