@@ -160,6 +160,9 @@ esac
 zstyle ':completion:*' completer _expand _complete _correct _approximate
 zstyle ':completion:*' format '%d:'
 zstyle ':completion:*' group-name ''
+zstyle ':completion:*' accept-exact '*(N)'
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path ~/.zsh/cache
 eval $(gdircolors -b)
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' matcher-list 'r:|[._-]=* r:|=*'
