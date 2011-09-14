@@ -59,7 +59,7 @@ THINKPAD    /home/chem/bin/switch_to_console
 #
 #RELOAD
 
-e## ABORT
+## ABORT
 # String with command and options that should be executed when Abort button is
 # pressed (only available on A series). By default no command is executed.
 #
