@@ -69,13 +69,13 @@ THINKPAD    /home/chem/bin/switch_to_console
 # String with command and options that should be executed when Backward button is
 # pressed (only available on A series). By default no command is executed.
 #
-#BACKWARD
+BACKWARD /usr/local/bin/urxvtc
 
 ## FORWARD
 # String with command and options that should be executed when Forward button is
 # pressed (only available on A series). By default no command is executed.
 #
-#FORWARD
+FORWARD  /usr/local/bin/xterm
 
 ## FN
 # String with command and options that should be executed when Fn button is
