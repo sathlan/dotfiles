@@ -177,7 +177,7 @@ dvdb ()
         else
             # not tested ...
             local fname=`basename "$1" | tr -s "[' \t]" '_'`
-            files="${files} /${fname}=${1} "
+            files="${files} /${fname}=\"${1}\" "
             if [ -z "$2" ];then
                 local tmp_dir=`mktemp -t mkisofs`
                 files="-graft-points ${files} $tmp_dir"
