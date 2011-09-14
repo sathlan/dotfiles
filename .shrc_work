@@ -1,6 +1,6 @@
 # for people
 alias kbdfr="setxkbmap fr"
-alias kbddv="setxkbmap dvorak"
+alias kbddv="setxkbmap dvorak;$HOME/bin/setup_kbd.sh"
 
 WORK_PARA_F=$HOME/.`hostname`
 [ -e $WORK_PARA_F ] && . $WORK_PARA_F
