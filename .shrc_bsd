@@ -81,3 +81,5 @@ search_perl_pkg ()
     make search name=p5-`echo -n $pkg| tr -s ':' | tr : -`
     cd "$odir"
 }
+
+alias cpanp='export PKG_DBDIR=~/.local/var/db/pkg ; cpanp '
