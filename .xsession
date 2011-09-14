@@ -9,9 +9,6 @@ xrdb -load $HOME/.Xdefaults
 setup_kbd.sh 
 sleep 1
 
-vid-setup.sh
-sleep 1
-
 WALLP=$HOME/movies/Wallpapers-room_com___Radia8_by_yt458_1440x900.xpm
 
 PATH=$HOME/bin:$PATH
