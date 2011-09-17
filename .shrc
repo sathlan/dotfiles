@@ -546,14 +546,25 @@ export R_LIBS
 # Git
 git_create_new()
 {
-    [ -d ".git" ] && echo "Git already initialised, aborting" && return 2 
+    [ -d ".git" ] && echo "Git already initialised, aborting" && return 2
     [ ! -e ".gitignore" ] && echo "Missing .gitignore, aborting..." && return 2 
     git init
     git add `git status --porcelain | awk '{print $2}'` 
     git commit -a -m'Initial commit.'
 }
 
+git_basic_ignore()
+{
+    echo "*/.#*
+*/#*
+*#
+.#*
+*/.#*
+*.swp" > .gitignore
+}
+
 alias gcn=git_create_new
+alias gbi=git_basic_ignore
 
 # Editor
 EDITOR="emacsclient --alternate-editor vi"  # Others.
