@@ -50,7 +50,8 @@ tpb &
 sleep 1
 
 
-xmonad
+exec dbus-launch --exit-with-session ck-launch-session xmonad >$HOME/.xsession-errors 2>&1
+#xmonad
 #awesome
 
 wait $!
