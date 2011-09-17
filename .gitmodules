@@ -1,0 +1,3 @@
+[submodule ".dzil"]
+	path = .dzil
+	url = /home/chem/src/dzil
